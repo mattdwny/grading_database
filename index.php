@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 require("curlRequest.php");
 $webpage = 'http://web.njit.edu/';
@@ -101,4 +102,3 @@ if(isset ($_POST['username']) && isset ($_POST['password']))
 			</form>
 	</div>
 </html>
-

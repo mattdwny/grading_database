@@ -1,5 +1,7 @@
 <?php
+
 require_once("backrequire.php");
+
 if( isset ($_POST[0]) && isset ($_POST[1]) )
 {
 	//DB connection
@@ -12,10 +14,12 @@ if( isset ($_POST[0]) && isset ($_POST[1]) )
 
 	$sql_result = mysql_fetch_assoc(mysql_query( $sql, $conn ));
 	echo $sql_result['type'];
+
 	if(! $sql_result )
 	{
 	  die('Could not get data: ' . mysql_error());
 	}
+
 
 	/*if( strpos($sql_result['username'], $_POST[0]) !== false)
 	{	
@@ -37,10 +41,9 @@ if( isset ($_POST[0]) && isset ($_POST[1]) )
 	//AddTFQuestion($conn, 2, "is dylan gay", "F");
 	//AddOEQuestion($conn, 2, "what is your opinion on airline food?");
 	//AddFBQuestion($conn, 2, "is dylan gay", "no");
+
 	mysql_close($conn);
 
 }
-
-
 
 ?>

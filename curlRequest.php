@@ -15,7 +15,6 @@ function curlReq($url, $data)
 	return $result;
 }
 
-
 function curlReqJxJ($url, $data)
 {
 	$encoded = json_encode($data);
@@ -34,5 +33,4 @@ function curlReqJxJ($url, $data)
 
 	return $decoded;
 }
-
 ?>
