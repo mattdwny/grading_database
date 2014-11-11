@@ -9,14 +9,9 @@ if (isset($_POST['question']) && !empty($_POST['question'])
 	$question=$_POST['question'];
 	$answer=$_POST['answer'];
 
-	echo "frontworks";
+	$data = array('url' => 'addfbquestion', 'author' => $_SESSION['id'], 'type' => 'FB', 'question' => $question, 'answer' => $answer);
 
-
-	$data=array('question' => $question, 'answer' => $answer, 'author' => $_SESSION['user']);
-
-	$response=curlReqJxJ("web.njit.edu/~ss2563/verifyfbquestion.php", $data);
-	echo "everythinglese works";
-
+	$response = curlRequestF(json_encode($data));
 }
 ?>
 <html>

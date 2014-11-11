@@ -8,13 +8,12 @@ if (isset($_POST['question']) && !empty($_POST['question']))
 {
 	$question=$_POST['question'];
 	$answer=$_POST['answer'];
-	$data=array('question' => $question, 'answer' => $answer, 'author' => $_SESSION['user']);
-	echo $_SESSION['user'];
+	
+	$data = array('url' => 'addtfquestion', 'author' => $_SESSION['id'], 'type' => 'TF', 'question' => $question, 'answer' => $answer);
 
-	$response=curlReqJxJ("web.njit.edu/~md369/verifytfquestion.php", $data);
-
-	echo $response->message;
-	//->message;
+	$response = curlRequestF(json_encode($data));
+	
+	echo $response;
 }
 ?>
 

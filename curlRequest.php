@@ -1,36 +1,47 @@
 <?php
-function curlReq($url, $data)
+require_once("globals.php");
+
+function curlRequestF($encoded)
 {
+	global $page, $mid;
+
+	$decoded = json_decode($encoded);
+	
+	//echo $encoded;
+	//echo "$page/$mid/".$decoded->url.'M.php';
+
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type' => 'text/plain'));
-	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_URL, "$page/$mid/".$decoded->url.'M.php');
 	curl_setopt($ch, CURLOPT_POST, true);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $encoded);
 
-	$result=curl_exec($ch);
-
+	$result = curl_exec($ch);
 	curl_close($ch);
 
 	return $result;
 }
 
-function curlReqJxJ($url, $data)
+function curlRequestM($encoded)
 {
-	$encoded = json_encode($data);
+	global $page, $back;
 
+	$decoded = json_decode($encoded);
+
+	//echo $encoded;
+	//echo "$page/$back/".$decoded->url.'B.php';
+	
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type' => 'text/plain'));
-	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_URL, "$page/$back/".$decoded->url.'B.php');
 	curl_setopt($ch, CURLOPT_POST, true);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_POSTFIELDS, $encoded);
 
-	$result=curl_exec($ch);
+	$result = curl_exec($ch);
 	curl_close($ch);
-	
-	$decoded = json_decode($result);
 
-	return $decoded;
+	return $result;
 }
 ?>

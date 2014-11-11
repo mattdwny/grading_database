@@ -7,9 +7,7 @@ if (isset($encoded) && !empty($encoded))
 {
 	$decoded = json_decode($encoded);
 
-	$conn=retConn();
-
-	AddFBQuestion($conn, getUser($conn, $decoded->author), $decoded->question, $decoded->answer);
+	SaveTest($decoded->user, $decoded->testName, $decoded->MC, $decoded->TF, $decoded->FB, $decoded->OE);
 }
 
 ?>

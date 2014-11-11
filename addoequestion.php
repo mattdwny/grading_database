@@ -7,13 +7,11 @@ if (isset($_POST['question']) && !empty($_POST['question']))
 {
 	$question=$_POST['question'];
 
-	echo "frontworks";
+	$data = array('url' => 'addoequestion', 'author' => $_SESSION['id'], 'type' => 'OE', 'question' => $question);
 
-	$data=array('question' => $question, 'author' => $_SESSION['user']);
-
-	$response=curlReqJxJ("web.njit.edu/~md369/verifyoequestion.php", $data);
-	echo "everythinglese works";
-
+	$response = curlRequestF(json_encode($data));
+	
+	echo $response;
 }
 ?>
 <html>

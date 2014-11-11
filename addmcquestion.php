@@ -11,24 +11,15 @@ if (isset($_POST['question']) && !empty($_POST['question'])
 	&& isset($_POST['d']) && !empty($_POST['d'])
 	&& isset($_POST['e']) && !empty($_POST['e'])	)
 {
-	$question=$_POST['question'];
-	$answer=$_POST['answer'];
-	$a=$_POST['a'];
-	$b=$_POST['b'];
-	$c=$_POST['c'];
-	$d=$_POST['d'];
-	$e=$_POST['e'];
-	echo "frontworks";
+	$data = array(	'url' => 'addmcquestion',
+					'author' => $_SESSION['id'],
+					'type' => 'MC', 
+					'question' => $_POST['question'], 'answer' => $_POST['answer'],
+					'a' => $_POST['a'], 'b' => $_POST['b'], 'c' => $_POST['c'], 'd' => $_POST['d'], 'e' => $_POST['e']);
 
-
-
-	$data=array('question' => $question, 'answer' => $answer,
-				'a' => $a, 'b' => $b, 'c' => $c, 'd' => $d, 'e' => $e,
-		'author' => $_SESSION['user']);
-
-	$response=curlReqJxJ("web.njit.edu/~md369/verifymcquestion.php", $data);
-	echo "everythinglese works";
-
+	$response = curlRequestF(json_encode($data));
+	
+	echo $response;
 }
 ?>
 

@@ -1,6 +1,7 @@
 <?php
 session_start();
-require("killnoninstructors.php");
+require_once("killnoninstructors.php");
+require_once("globals.php");
 echo $_SESSION['user'];
 ?>
 
@@ -58,13 +59,13 @@ h2
 <body>
 	<div class="container">
 		<div class="tempLeft">
-		<h2><a href="http://web.njit.edu/~md369/addquestion.php">Add Question</a></h2>
+		<h2><a href="http://web.njit.edu/<?php echo $front ?>/addquestion.php">Add Question</a></h2>
 		</div>
 		<div class="tempMiddle">
-		<h2><a href="http://web.njit.edu/~md369/createtest.php">Create Test</a></h2>
+		<h2><a href="http://web.njit.edu/<?php echo $front ?>/createtest.php">Create Test</a></h2>
 		</div>
 		<div class="tempRight">
-		<h2><a href="http://web.njit.edu/~md369/manage.php">Manage Test</a></h2>
+		<h2><a href="http://web.njit.edu/<?php echo $front ?>/manage.php">Manage Test</a></h2>
 		</div>
 	</div>
 </body>

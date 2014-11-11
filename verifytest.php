@@ -1,15 +1,11 @@
 <?php
-require_once("backrequire.php");
-
+require_once("curlRequest.php");
 $encoded = file_get_contents('php://input');
 
 if (isset($encoded) && !empty($encoded))
 {
 	$decoded = json_decode($encoded);
 
-	$conn=retConn();
-
-	AddOEQuestion($conn, getUser($conn, $decoded->author), $decoded->question);
+	$result = curlReqJxJ("web.njit.edu/~dat25/savetest.php", $decoded);
 }
-
 ?>

@@ -1,6 +1,7 @@
 <?php
 session_start();
-require("killnoninstructors.php");
+require_once("killnoninstructors.php");
+require_once("globals.php");
 echo $_SESSION['user'];
 ?>
 
@@ -14,16 +15,16 @@ body
 <body>
 	<div class="container">
 		<div class="tempLeft">
-		<h2><a href="http://web.njit.edu/~md369/addmcquestion.php">Add Multiple Choice Questions</a></h2>
+		<h2><a href="http://web.njit.edu/<?php echo $front ?>/addmcquestion.php">Add Multiple Choice Questions</a></h2>
 		</div>
 		<div class="tempTop">
-		<h2><a href="http://web.njit.edu/~md369/addtfquestion.php">Add True-False Questions</a></h2>
+		<h2><a href="http://web.njit.edu/<?php echo $front ?>/addtfquestion.php">Add True-False Questions</a></h2>
 		</div>
 		<div class="tempRight">
-		<h2><a href="http://web.njit.edu/~md369/addfbquestion.php">Add Fill in the Blanks Choice Questions</a></h2>
+		<h2><a href="http://web.njit.edu/<?php echo $front ?>/addfbquestion.php">Add Fill in the Blanks Choice Questions</a></h2>
 		</div>
 		<div class="tempBottom">
-		<h2><a href="http://web.njit.edu/~md369/addoequestion.php">Add Open Ended Questions</a></h2>
+		<h2><a href="http://web.njit.edu/<?php echo $front ?>/addoequestion.php">Add Open Ended Questions</a></h2>
 		</div>
 	</div>
 </body>

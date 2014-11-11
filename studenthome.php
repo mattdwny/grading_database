@@ -1,7 +1,7 @@
 <?php
 session_start();
-require("killnonstudents.php");
-
+require_once("killnonstudents.php");
+require_once("globals.php");
 ?>
 
 <html>
@@ -48,10 +48,10 @@ h2
 <body>
 	<div class="container">
 		<div class="tempLeft">
-		<h2><a href="http://web.njit.edu/~md369/taketest.php">Take Test</a></h2>
+		<h2><a href="http://web.njit.edu/<?php echo $front ?>/taketest.php">Take Test</a></h2>
 		</div>
 		<div class="tempRight">
-		<h2><a href="http://web.njit.edu/~md369/reviewtest.php">Review Test Grade</a></h2>
+		<h2><a href="http://web.njit.edu/<?php echo $front ?>/reviewtest.php">Review Test Grade</a></h2>
 		</div>
 	</div>
 </body>

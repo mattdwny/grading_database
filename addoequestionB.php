@@ -1,11 +1,11 @@
 <?php
-require_once("curlRequest.php");
+require_once("backrequire.php");
 $encoded = file_get_contents('php://input');
 
 if (isset($encoded) && !empty($encoded))
 {
 	$decoded = json_decode($encoded);
 
-	$result = curlReqJxJ("web.njit.edu/~md369/saveoequestion.php", $decoded);
+	AddQuestion($decoded);
 }
 ?>
