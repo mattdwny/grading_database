@@ -3,17 +3,40 @@ session_start();
 require("killnoninstructors.php");
 require("curlRequest.php");
 
-/*if(isset($_POST['test']) && !empty($_POST['test']))
+if(isset($_POST['test']) && !empty($_POST['test']))
 {
-	curlRequestJxJ("web.njit.edu/~dat25/verifytest.php", $_POST['test']);
-}*/
+	$test = json_decode($_POST['test']);
+	if(!empty($test->testName))
+	{
+		echo $_POST['test'];
+
+		$test->url = 'createtest';
+		$test->id = $_SESSION['id'];
+		$test->flag = 'test'; 
+		$stuff = curlRequestF(json_encode($test));
+		echo $stuff;
+	}
+}
 ?>
 
 <html>
 <head>
-	<link rel="stylesheet" type="text/css" href="table.css">
 	<script type="text/javascript">
 
+		function InitQuestions()
+		{
+			document.getElementById('test').value = '{"testName":"","MC":[],"TF":[],"FB":[],"OE":[]}';
+		}
+		
+		function NameTest()
+		{
+			var test = document.getElementById('test').value;
+			var testName = document.getElementById('testName').value;
+			var obj = JSON.parse(test);
+			obj.testName = testName;
+			document.getElementById('test').value = JSON.stringify(obj);
+		}
+	
 		function drawQuestions()
 		{
 			var qt = document.getElementById('qt').value;
@@ -25,10 +48,9 @@ require("curlRequest.php");
 		{
 			var table = document.getElementById('variable').children[0];
 			var qt = document.getElementById('qt').value;
-			var test = document.getElementById('test').innerHTML;
+			var test = document.getElementById('test').value;
 			var obj = JSON.parse(test);
-			document.getElementById('output_test').innerHTML = document.getElementById('test').innerHTML;
-			
+		
 			if(qt == 'MC')
 			{
 				for(var i = 1; i < table.rows.length; i++)
@@ -58,8 +80,7 @@ require("curlRequest.php");
 				}
 			}
 			
-			document.getElementById('test').innerHTML = JSON.stringify(obj);//document.getElementById('variable').children[0].innerHTML;
-			document.getElementById('output_test').innerHTML = JSON.stringify(obj);
+			document.getElementById('test').value = JSON.stringify(obj);//document.getElementById('variable').children[0].innerHTML;
 		}
 		
 		function addQuestion(obj,fid)
@@ -77,6 +98,7 @@ require("curlRequest.php");
 			
 			document.getElementById('test').innerHTML = JSON.stringify(obj);
 		}
+		window.onload = InitQuestions;
 </script>
 
 </head>
@@ -103,43 +125,43 @@ table, td, th {
 	<div class="border">
 	
 		<h2>Create test</h2>
-		<body>	
+		<body>
+		
 			<p hidden name="MC" id="MC"> <?php echo formatQuestions('MC'); ?> </p>
 			<p hidden name="TF" id="TF"> <?php echo formatQuestions('TF'); ?> </p>
 			<p hidden name="FB" id="FB"> <?php echo formatQuestions('FB'); ?> </p>
 			<p hidden name="OE" id="OE"> <?php echo formatQuestions('OE'); ?> </p>
 			
+			<label>Test name :</label>
+				<input type="text" id="testName" name="testName"/><br>
+				
+			<br><p id="testInfo" name="testInfo">This is a paragraph</p>
+			
+			<br><label>Question type: </label>
+				<select id="qt" name="qt">
+					<option value="MC">Multiple Choice</option>
+					<option value="TF">True False</option>
+					<option value="FB">Fill in the Blank</option>
+					<option value="OE">Open Ended</option>
+				</select>
+				<input type="button" value="Inspect Questions" onclick="drawQuestions();">
+			<br>
+
+			<p id="variable" name="variable">
+				<?php echo formatQuestions('MC'); ?> </p>
+			</p>
+		
+			<br>
+				<input type="button" value="Add Questions" onclick="addQuestions();NameTest();">
+			<br>
+			<br>
+			
 			<form action="" method="POST">
 				
-				<p hidden name="test" id="test">{"user":"nicholson","testName":"none","MC":[],"TF":[],"FB":[],"OE":[]}</p>
-				<label>Test name :</label>
-					<input type="text" id="testName" name="testName"/><br>
-					
-				<br><p id="testInfo" name="testInfo">This is a paragraph</p>
-				
-				<br><label>Question type: </label>
-					<select id="qt" name="qt">
-						<option value="MC">Multiple Choice</option>
-						<option value="TF">True False</option>
-						<option value="FB">Fill in the Blank</option>
-						<option value="OE">Open Ended</option>
-					</select>
-					<input type="button" value="Inspect Questions" onclick="drawQuestions();">
-				<br>
+				<input type="hidden" name="test" id="test">
 
-				<p id="variable" name="variable">
-					<?php echo formatQuestions('MC'); ?> </p>
-				</p>
-			
-				<p id="output_test" name="output_test">
-				</p>
-			
-				<br>
-					<input type="button" value="Add Questions" onclick="addQuestions();">
-				<br>
-				<br>
 				<div class="button">
-					<input type="submit" value="Submit test " onclick="lastChecks();">
+					<input type="submit" value="Submit test " onclick="NameTest();">
 				</div>
 				
 			</form>

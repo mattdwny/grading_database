@@ -5,14 +5,16 @@ if (isset($encoded) && !empty($encoded))
 {
 	$decoded = json_decode($encoded);
 	
-	if($decoded->flag == 'fetch') //fetch questions
+	if($decoded->flag == 'get') //fetch questions
 	{
-		echo FetchQuestions($decoded);
+		echo GetQuestions($decoded);
 	}
-	else if($decoded->flag == 'test') //saving test
+	else if($decoded->flag == 'submit') //saving test
 	{
 		//submitting test for SQL entry
-		echo CreateTest($decoded);
+		echo SubmitGrade($decoded);
 	}
+	
+	
 }
 ?>

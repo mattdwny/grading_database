@@ -11,6 +11,12 @@ if (isset($_POST['question']) && !empty($_POST['question']))
 
 	$response = curlRequestF(json_encode($data));
 	
+	//TODO: adding unit test cases
+	//write a program that finds palindromes.
+	//test case1: Race car => false
+	//test case2: racecar => true
+	//test case3: mom => true
+	
 	echo $response;
 }
 ?>
