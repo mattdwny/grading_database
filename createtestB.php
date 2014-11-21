@@ -7,7 +7,7 @@ if (isset($encoded) && !empty($encoded))
 	
 	if($decoded->flag == 'fetch') //fetch questions
 	{
-		echo FetchQuestions($decoded);
+		echo FetchQuestions($decoded, true);
 	}
 	else if($decoded->flag == 'test') //saving test
 	{

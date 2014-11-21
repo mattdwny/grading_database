@@ -51,7 +51,7 @@ function CreateTest($data) //instructor makes exam
 	echo 'running';
 }
 
-function FetchQuestions($data) //instructor get questions
+function FetchQuestions($data, $instructor) //instructor get questions
 {
 	$conn = getConn();
 	$sql = 'SELECT *
@@ -61,7 +61,26 @@ function FetchQuestions($data) //instructor get questions
 	$sql_result = mysql_query($sql, $conn);
 	mysql_close($conn);
 	
-	return sql2json($sql_result);
+	return sql2json($sql_result, $instructor);
+}
+
+function FetchTestQuestions($data, $instructor) //student get questions
+{
+	$conn = getConn();
+	$sql =  'SELECT * '.
+			'FROM cs490q'.$data->type.', cs490testbank '.
+			'WHERE cs490q'.$data->type.'.fid = cs490testbank.fid '. 
+			'AND cs490testbank.tid = "'.$data->tid.'";';
+	
+	//test# == 17
+	// Select *
+	//FROM cs490qMC, cs490testbank
+	//WHERE cs490qMC.fid = cs490testbank.fid AND cs490testbank.tid = data->tid
+	
+	$sql_result = mysql_query($sql, $conn);
+	mysql_close($conn);
+	
+	return sql2json($sql_result, $instructor);
 }
 
 function getConn() //getting a SQL connection to access database
@@ -99,7 +118,7 @@ function getConn() //getting a SQL connection to access database
 	$sql_result = mysql_query($sql, $conn);
 	mysql_close($conn);
 	
-	//return sql2json2($sql_result);
+	//return sql2json2($sql_result, true);
 }*/
 
 function Login($data) //student/instructor login
@@ -119,14 +138,14 @@ function Login($data) //student/instructor login
 	
 	if(! $sql_result ) die('Could not get data: ' . mysql_error());
 
-	$encoded = sql2json($sql_result);
+	$encoded = sql2json($sql_result, true);
 	
 	mysql_close($conn);
 
 	return $encoded;
 }
 
-function sql2json($data_sql) //turns sql data to json
+function sql2json($data_sql, $instructor) //turns sql data to json
 {
     $json_str = ""; //Init the JSON string.
 
@@ -142,13 +161,16 @@ function sql2json($data_sql) //turns sql data to json
             $count = 0;
             foreach($row as $key => $value)
 			{
+				$count++;
                 //If it is an associative array we want it in the format of "key":"value"
-                if(count($row) > 1) $json_str .= "\"$key\":\"$value\"";
-                else $json_str .= "\"$value\"";
+				if($instructor || !($key == "uid" || $key == "answer"))
+				{
+					if(count($row) > 1) $json_str .= "\"$key\":\"$value\"";
+					else $json_str .= "\"$value\"";
 
-                //Make sure that the last item don't have a ',' (comma)
-                $count++;
-                if($count < count($row)) $json_str .= ",\n";
+					//Make sure that the last item don't have a ',' (comma)
+					if($count < count($row)) $json_str .= ",\n";
+				}
             }
             $row_count++;
             if(count($row) > 1) $json_str .= "}\n";
@@ -169,50 +191,7 @@ function sql2json($data_sql) //turns sql data to json
     return $json_str;
 }
 
-/*function sql2json($data_sql) //???? //TODO
-{
-    $json_str = ""; //Init the JSON string.
-
-    if($total = mysql_num_rows($data_sql)) //See if there is anything in the query
-	{
-        if(mysql_num_rows ($data_sql) != 1) $json_str .= "[\n";
-
-        $row_count = 0;
-        while($row = mysql_fetch_assoc($data_sql))
-		{
-            if(count($row) > 1) $json_str .= "{\n";
-
-            $count = 0;
-            foreach($row as $key => $value)
-			{
-                //If it is an associative array we want it in the format of "key":"value"
-                if(count($row) > 1) $json_str .= "\"$key\":\"$value\"";
-                else $json_str .= "\"$value\"";
-
-                //Make sure that the last item don't have a ',' (comma)
-                $count++;
-                if($count < count($row)) $json_str .= ",\n";
-            }
-            $row_count++;
-            if(count($row) > 1) $json_str .= "}\n";
-
-            //Make sure that the last item don't have a ',' (comma)
-            if($row_count < $total) $json_str .= ",\n";
-        }
-
-        if(mysql_num_rows ($data_sql) != 1) $json_str .= "]\n";
-    }
-
-    //Replace the '\n's - make it faster - but at the price of bad readability.
-    $json_str = str_replace("\n","",$json_str); //Comment this out when you are debugging the script
-
-	//echo $json_str;
-	
-    //Finally, output the data
-    return $json_str;
-}
-
-function SubmitGrade($data) //student submit test for grading //TODO
+/*function SubmitGrade($data) //student submit test for grading //TODO
 {
 	
 }*/

@@ -12,7 +12,7 @@ if (isset($_POST['question']) && !empty($_POST['question']))
 	$response = curlRequestF(json_encode($data));
 	
 	//TODO: adding unit test cases
-	//write a program that finds palindromes.
+	//Question: "Write a palindrome script that returns "true" when it finds a palindrome and "false" when the inputted string is not a palindrome. The function does not need to handle upper/lower case or spaces.
 	//test case1: Race car => false
 	//test case2: racecar => true
 	//test case3: mom => true
