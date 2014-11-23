@@ -3,20 +3,19 @@ session_start();
 require_once("killnonstudents.php");
 require_once("curlRequest.php");
 
-/*if(isset($_POST['test']) && !empty($_POST['test']))
+$test = $_POST['test'];
+if(isset($test) && !empty($test))
 {
-	$test = json_decode($_POST['test']);
-	if(!empty($test->testName))
+	$decoded = json_decode($test);
+	if(!empty($decoded->tid))
 	{
-		echo $_POST['test'];
-
-		$test->url = 'createtest';
-		$test->id = $_SESSION['id'];
-		$test->flag = 'test'; 
-		$stuff = curlRequestF(json_encode($test));
+		$decoded->url = 'taketest';
+		$decoded->uid = $_SESSION['id'];
+		$decoded->flag = 'submit'; 
+		$stuff = curlRequestF(json_encode($decoded));
 		echo $stuff;
 	}
-}*/
+}
 ?>
 
 <html>
@@ -25,8 +24,8 @@ require_once("curlRequest.php");
 
 		function InitQuestions()
 		{
-			document.getElementById('test').value = '{"uid":"","tid":"","MC":[],"TF":[],"FB":[],"OE":[]}';
-			//'{"testName":"","MC":["question":{"fid":"10","answer":""}],"TF":[],"FB":[],"OE":[]}';
+			document.getElementById('test').value = '{"tid":"","MC":[],"TF":[],"FB":[],"OE":[]}';
+			//'{"tid":"17","MC":["question":{"fid":"10","answer":""}],"TF":[],"FB":[],"OE":[]}';
 			
 			var test = document.getElementById('test').value;
 			var obj = JSON.parse(test);
@@ -35,6 +34,8 @@ require_once("curlRequest.php");
 			var TF = document.getElementById("TF");
 			var FB = document.getElementById("FB");
 			var OE = document.getElementById("OE");
+			
+			obj.tid = <?php echo $_GET['tid']; ?>;
 			
 			for(var i = 1; i < MC.rows.length; i++)
 			{
@@ -77,20 +78,29 @@ require_once("curlRequest.php");
 			return true;
 		}
 		
+		function btnClick()
+		{
+			if(isValidForm()) document.getElementById("formTest").submit();
+			else			  alert('You need to attempt all questions before submitting.')
+		}
+		
 		function isValidForm()
 		{	
-			$test = document.getElementById('test');
+			var test = document.getElementById('test').value;
+			var obj = JSON.parse(test);
 			
-			$MC = document.getElementById("MC");
-			$TF = document.getElementById("TF");
-			$FB = document.getElementById("FB");
-			$OE = document.getElementById("OE");
+			var MC = document.getElementById("MC");
+			var TF = document.getElementById("TF");
+			var FB = document.getElementById("FB");
+			var OE = document.getElementById("OE");
 			
 			for(var i = 1; i < MC.rows.length; i++)
 			{
 				if(!SetQuestion(obj.MC, i-1, MC.rows[i].cells[7].children[0].value)) return false; //if you couldn't set a question, fail out
 			}
-
+			
+			document.getElementById('test').value = JSON.stringify(obj);
+			
 			for(var i = 1; i < TF.rows.length; i++)
 			{
 				if(!SetQuestion(obj.TF, i-1, TF.rows[i].cells[2].children[0].value)) return false;
@@ -105,6 +115,8 @@ require_once("curlRequest.php");
 			{
 				if(!SetQuestion(obj.OE, i-1, OE.rows[i].cells[2].children[0].value)) return false;
 			}
+			
+			document.getElementById('test').value = JSON.stringify(obj);
 			
 			return true;
 		}
@@ -139,30 +151,26 @@ td
 	max-width:200px;
 }
 </style>
-		<h2>Create test</h2>
+		<h2>Take test</h2>
 		<body>
 			<p>
 				<?php echo GetQuestions("MC"); ?>
 			</p>
-			<br><br>
 			<p>
 				<?php echo GetQuestions("TF"); ?>
 			</p>
-			<br><br>
 			<p>
 				<?php echo GetQuestions("FB"); ?>
 			</p>
-			<br><br>
 			<p>
 				<?php echo GetQuestions("OE"); ?>
 			</p>
-			<br><br>
-			<form action="" method="POST" onsubmit="return isValidForm()">
+			<form id="formTest" method="POST">
 				
 				<input type="hidden" name="test" id="test">
 				
 				<div class="button">
-					<input type="submit" value="Submit test " onclick="">
+					<input type="button" value="Submit test" onclick="return btnClick();">
 				</div>	
 			</form>
 		</body>
@@ -172,7 +180,7 @@ td
 function GetQuestions($type)
 {
 	//TODO: tagging system for questions, Query using like keyword search of question in SQL & tagging
-	$arr = array( 'url' => 'taketest', 'flag' => 'fetch', 'tid' => "17" //$_SESSION['id']
+	$arr = array( 'url' => 'taketest', 'flag' => 'fetch', 'tid' => $_GET['tid'] //$_SESSION['id']
 				, 'uid' => $_SESSION['id'], 'type' => $type);
 	
 	//return curlRequestF(json_encode($arr));
@@ -181,8 +189,15 @@ function GetQuestions($type)
 	$formatted = "";
 	$i = 0;
 	
-	$formatted .= '<table id="'.$type.'"><tbody>';
+	
+	$formatted .= '<table ';
+	if(count($obj) == 0) $formatted .= 'style="display:none;" ';
+	$formatted .= 'id="'.$type.'"><tbody>';
 	$formatted .= "<tr name=\"rows\">";
+	
+	
+	//$formatted .= '<table id="'.$type.'"><tbody>';
+	//$formatted .= "<tr name=\"rows\">";
 	
 	$formatted .= "<td name=\"cols\">Question</td>";
 	$formatted .= "<td hidden name=\"cols\">ID</td>";
@@ -229,6 +244,8 @@ function GetQuestions($type)
 		$formatted .= "</tr>";
 	}
 	$formatted .= "</tbody></table>";
+	
+	if(count($obj) != 0) $formatted .= "<br><br>";
 	
 	return $formatted;
 }

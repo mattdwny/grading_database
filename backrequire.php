@@ -70,12 +70,12 @@ function FetchTestQuestions($data, $instructor) //student get questions
 	$sql =  'SELECT * '.
 			'FROM cs490q'.$data->type.', cs490testbank '.
 			'WHERE cs490q'.$data->type.'.fid = cs490testbank.fid '. 
-			'AND cs490testbank.tid = "'.$data->tid.'";';
+			'AND cs490testbank.tid = "'.$data->tid.'" AND cs490testbank.type = "'.$data->type.'";';
 	
 	//test# == 17
 	// Select *
 	//FROM cs490qMC, cs490testbank
-	//WHERE cs490qMC.fid = cs490testbank.fid AND cs490testbank.tid = data->tid
+	//WHERE cs490qMC.fid = cs490testbank.fid AND cs490testbank.tid = data->tid AND cs490testbank.type = MC;
 	
 	$sql_result = mysql_query($sql, $conn);
 	mysql_close($conn);
@@ -100,27 +100,6 @@ function getConn() //getting a SQL connection to access database
 	return $conn;
 }
 
-/*function GetQuestions($data) //student get questions //TODO
-{
-	$conn = getConn();
-	if($data->type != "OE")
-	{
-		$sql = 'SELECT *
-				FROM cs490q'.$data->type.' '.
-				'WHERE cs490q'.$data->type.'.uid = "'.$data->author.'";';
-	}
-	else
-	{
-		$sql = 'SELECT *
-					FROM cs490q'.$data->type.' '.
-					'WHERE cs490q'.$data->type.'.uid = "'.$data->author.'";';
-	}
-	$sql_result = mysql_query($sql, $conn);
-	mysql_close($conn);
-	
-	//return sql2json2($sql_result, true);
-}*/
-
 function Login($data) //student/instructor login
 {
 	$conn = getConn();
@@ -130,6 +109,31 @@ function Login($data) //student/instructor login
 			WHERE cs490users.uid = cs490pass.uid AND
 				  cs490pass.password = "'.$data->pass.'" AND
 				  cs490users.username = "'.$data->user.'";';
+
+				  
+	//echo $sql;
+	
+	$sql_result = mysql_query( $sql, $conn);		  
+	
+	if(! $sql_result ) die('Could not get data: ' . mysql_error());
+
+	$encoded = sql2json($sql_result, true);
+	
+	mysql_close($conn);
+
+	return $encoded;
+}
+
+function SelectTests($data)
+{
+	$conn = getConn();
+
+	$sql = 'SELECT *
+			FROM cs490test
+			WHERE cs490test.closed = 0;'; /*AND
+			(SELECT 1
+			FROM cs490testgrade
+			WHERE cs490testgrade.uid <> "'.$data->id.'");';*/
 
 				  
 	//echo $sql;
@@ -189,6 +193,38 @@ function sql2json($data_sql, $instructor) //turns sql data to json
 	
     //Finally, output the data
     return $json_str;
+}
+
+
+function StoreQuestions($data)
+{
+	$conn = getConn();
+	
+	$uid = $data->uid;
+	$tid = $data->tid;
+	
+	foreach ($data->MC as &$mc)
+	{
+		$sql = "INSERT INTO cs490qStored VALUES('','".$uid."','".$tid."','".$mc->fid."','MC','".$mc->answer."');";
+		$sql_result = mysql_query($sql, $conn);
+	}
+	foreach ($data->TF as &$tf)
+	{
+		$sql = "INSERT INTO cs490qStored VALUES('','".$uid."','".$tid."','".$tf->fid."','TF','".$tf->answer."');";
+		$sql_result = mysql_query($sql, $conn);
+	}
+	foreach ($data->FB as &$fb)
+	{
+		$sql = "INSERT INTO cs490qStored VALUES('','".$uid."','".$tid."','".$fb->fid."','FB','".$fb->answer."');";
+		$sql_result = mysql_query($sql, $conn);
+	}
+	foreach ($data->OE as &$oe)
+	{
+		$sql = "INSERT INTO cs490qStored VALUES('','".$uid."','".$tid."','".$oe->fid."','OE','".$oe->answer."');";
+		$sql_result = mysql_query($sql, $conn);
+	}
+	
+	mysql_close($conn);
 }
 
 /*function SubmitGrade($data) //student submit test for grading //TODO
