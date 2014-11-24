@@ -1,7 +1,7 @@
 <?php
 session_start();
-require("killnoninstructors.php");
-require("curlRequest.php");
+require_once("killnoninstructors.php");
+require_once("curlRequest.php");
 
 $tid = $_POST['tid'];
 if(isset($tid) && !empty($tid))

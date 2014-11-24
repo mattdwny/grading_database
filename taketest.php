@@ -20,112 +20,112 @@ if(isset($test) && !empty($test))
 ?>
 
 <html>
-<head>
-	<script type="text/javascript">
+	<head>
+		<script type="text/javascript">
 
-		function InitQuestions()
-		{
-			document.getElementById('test').value = '{"tid":"","MC":[],"TF":[],"FB":[],"OE":[]}';
-			//'{"tid":"17","MC":["question":{"fid":"10","answer":""}],"TF":[],"FB":[],"OE":[]}';
-			
-			var test = document.getElementById('test').value;
-			var obj = JSON.parse(test);
-			
-			var MC = document.getElementById("MC");
-			var TF = document.getElementById("TF");
-			var FB = document.getElementById("FB");
-			var OE = document.getElementById("OE");
-			
-			obj.tid = <?php echo $_GET['tid']; ?>;
-			
-			for(var i = 1; i < MC.rows.length; i++)
+			function InitQuestions()
 			{
-				AddQuestion(obj.MC, MC.rows[i].cells[1].innerHTML);
-			}
+				document.getElementById('test').value = '{"tid":"","MC":[],"TF":[],"FB":[],"OE":[]}';
+				//'{"tid":"17","MC":["question":{"fid":"10","answer":""}],"TF":[],"FB":[],"OE":[]}';
+				
+				var test = document.getElementById('test').value;
+				var obj = JSON.parse(test);
+				
+				var MC = document.getElementById("MC");
+				var TF = document.getElementById("TF");
+				var FB = document.getElementById("FB");
+				var OE = document.getElementById("OE");
+				
+				obj.tid = <?php echo $_GET['tid']; ?>;
+				
+				for(var i = 1; i < MC.rows.length; i++)
+				{
+					AddQuestion(obj.MC, MC.rows[i].cells[1].innerHTML);
+				}
 
-			for(var i = 1; i < TF.rows.length; i++)
-			{
-				AddQuestion(obj.TF, TF.rows[i].cells[1].innerHTML);
-			}
-		
-			for(var i = 1; i < FB.rows.length; i++)
-			{
-				AddQuestion(obj.FB, FB.rows[i].cells[1].innerHTML);
-			}
-		
-			for(var i = 1; i < OE.rows.length; i++)
-			{
-				AddQuestion(obj.OE, OE.rows[i].cells[1].innerHTML);
-			}
+				for(var i = 1; i < TF.rows.length; i++)
+				{
+					AddQuestion(obj.TF, TF.rows[i].cells[1].innerHTML);
+				}
 			
-			document.getElementById('test').value = JSON.stringify(obj);
-		}
-		
-		function QAPair (qid)
-		{
-			this.qid = qid;
-			this.answer = "";
-		}
-		
-		function AddQuestion(object, qid)
-		{
-			object.push(new QAPair(qid));
-		}
-		
-		function SetQuestion(object, i, answer)
-		{
-			if(answer == "") return false; //bad form
-			object[i].answer = answer;
-			return true;
-		}
-		
-		function btnClick()
-		{
-			if(isValidForm()) document.getElementById("formTest").submit();
-			else			  alert('You need to attempt all questions before submitting.')
-		}
-		
-		function isValidForm()
-		{	
-			var test = document.getElementById('test').value;
-			var obj = JSON.parse(test);
+				for(var i = 1; i < FB.rows.length; i++)
+				{
+					AddQuestion(obj.FB, FB.rows[i].cells[1].innerHTML);
+				}
 			
-			var MC = document.getElementById("MC");
-			var TF = document.getElementById("TF");
-			var FB = document.getElementById("FB");
-			var OE = document.getElementById("OE");
-			
-			for(var i = 1; i < MC.rows.length; i++)
-			{
-				if(!SetQuestion(obj.MC, i-1, MC.rows[i].cells[7].children[0].value)) return false; //if you couldn't set a question, fail out
+				for(var i = 1; i < OE.rows.length; i++)
+				{
+					AddQuestion(obj.OE, OE.rows[i].cells[1].innerHTML);
+				}
+				
+				document.getElementById('test').value = JSON.stringify(obj);
 			}
 			
-			document.getElementById('test').value = JSON.stringify(obj);
-			
-			for(var i = 1; i < TF.rows.length; i++)
+			function QAPair (qid)
 			{
-				if(!SetQuestion(obj.TF, i-1, TF.rows[i].cells[2].children[0].value)) return false;
-			}
-		
-			for(var i = 1; i < FB.rows.length; i++)
-			{
-				if(!SetQuestion(obj.FB, i-1, FB.rows[i].cells[2].children[0].value)) return false;
-			}
-		
-			for(var i = 1; i < OE.rows.length; i++)
-			{
-				if(!SetQuestion(obj.OE, i-1, OE.rows[i].cells[2].children[0].value)) return false;
+				this.qid = qid;
+				this.answer = "";
 			}
 			
-			document.getElementById('test').value = JSON.stringify(obj);
+			function AddQuestion(object, qid)
+			{
+				object.push(new QAPair(qid));
+			}
 			
-			return true;
-		}
-		
-		window.onload = InitQuestions;
-</script>
+			function SetQuestion(object, i, answer)
+			{
+				if(answer == "") return false; //bad form
+				object[i].answer = answer;
+				return true;
+			}
+			
+			function btnClick()
+			{
+				if(isValidForm()) document.getElementById("formTest").submit();
+				else			  alert('You need to attempt all questions before submitting.')
+			}
+			
+			function isValidForm()
+			{	
+				var test = document.getElementById('test').value;
+				var obj = JSON.parse(test);
+				
+				var MC = document.getElementById("MC");
+				var TF = document.getElementById("TF");
+				var FB = document.getElementById("FB");
+				var OE = document.getElementById("OE");
+				
+				for(var i = 1; i < MC.rows.length; i++)
+				{
+					if(!SetQuestion(obj.MC, i-1, MC.rows[i].cells[7].children[0].value)) return false; //if you couldn't set a question, fail out
+				}
+				
+				document.getElementById('test').value = JSON.stringify(obj);
+				
+				for(var i = 1; i < TF.rows.length; i++)
+				{
+					if(!SetQuestion(obj.TF, i-1, TF.rows[i].cells[2].children[0].value)) return false;
+				}
+			
+				for(var i = 1; i < FB.rows.length; i++)
+				{
+					if(!SetQuestion(obj.FB, i-1, FB.rows[i].cells[2].children[0].value)) return false;
+				}
+			
+				for(var i = 1; i < OE.rows.length; i++)
+				{
+					if(!SetQuestion(obj.OE, i-1, OE.rows[i].cells[2].children[0].value)) return false;
+				}
+				
+				document.getElementById('test').value = JSON.stringify(obj);
+				
+				return true;
+			}
+			
+			window.onload = InitQuestions;
+		</script>
 
-</head>
+	</head>
 
 
 <style>

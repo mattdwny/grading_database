@@ -1,7 +1,7 @@
 <?php
 session_start();
-require("killnoninstructors.php");
-require("curlRequest.php");
+require_once("killnoninstructors.php");
+require_once("curlRequest.php");
 
 
 if (isset($_POST['question']) && !empty($_POST['question']))

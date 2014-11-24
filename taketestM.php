@@ -54,8 +54,9 @@ if(isset($encoded) && !empty($encoded))
 		}
 		
 		echo $sum.'/'.$total;
+		$percent = $sum/$total*100;
 		
-		$submit = array( 'url' => 'taketest', 'grade' => $sum, 'tid' => $decoded->tid, 'uid' => $decoded->uid, 'flag' => 'submit' );
+		$submit = array( 'url' => 'taketest', 'grade' => $percent, 'tid' => $decoded->tid, 'uid' => $decoded->uid, 'flag' => 'submit' );
 		$info = curlRequestM(json_encode($submit));
 		echo $info;
 	}

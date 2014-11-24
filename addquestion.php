@@ -2,7 +2,6 @@
 session_start();
 require_once("killnoninstructors.php");
 require_once("globals.php");
-echo $_SESSION['user'];
 ?>
 
 <html>

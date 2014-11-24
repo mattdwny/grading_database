@@ -209,6 +209,94 @@ function Login($data) //student/instructor login
 	return $encoded;
 }
 
+function SelectGrades($data)
+{
+	$conn = getConn();
+	
+	$star = "t.tid, t.uid, t.testName, t.closed, t.minutes, tg.gid, tg.grade, tg.submitTime, tg.closeTime"; //all but tg.tid and tg.uid which are repeats
+	
+	$sql = "SELECT * FROM
+			(SELECT $star FROM cs490test AS t
+				LEFT  OUTER JOIN cs490testgrade AS tg ON t.tid = tg.tid
+					AND tg.uid = ".$data->uid." 
+			UNION
+			SELECT $star FROM cs490test AS t
+				RIGHT OUTER JOIN cs490testgrade AS tg ON t.tid = tg.tid
+					AND tg.uid = ".$data->uid." 
+			WHERE t.tid IS NOT NULL) AS joined
+				WHERE joined.closed = 1
+					AND joined.submitTime <> 0;";
+			
+	//echo $sql;
+	
+	$sql_result = mysql_query( $sql, $conn);	
+	
+	return sql2json($sql_result, true);
+}
+
+function SelectGrade($data)
+{
+	//(cs490testbank join cs490qMC) join cs490qStored
+	
+	//{ [(fid / type) join (actual question)] join [user response to question] }
+	
+	//This is olympian-ultra-mega-god-psychedelic-super-hyper-mega-tier query
+	
+	$conn = getConn();
+	$gid = GetGradeID($data->uid, $data->tid);
+	
+	$join = "OUTER JOIN cs490testbank AS tb ON tb.fid = qXX.fid 
+				AND tb.tid = ".$data->tid." AND 
+				tb.type = '".$data->type."'";
+	
+	$star1 = "qXX.question,";
+	
+	if($data->type != "OE") $star1 .= "qXX.answer,";
+	if($data->type == "MC") $star1 .= "qXX.a,";
+	if($data->type == "MC") $star1 .= "qXX.b,";
+	if($data->type == "MC") $star1 .= "qXX.c,";
+	if($data->type == "MC") $star1 .= "qXX.d,";
+	if($data->type == "MC") $star1 .= "qXX.e,";
+	
+	$star1 .= "tb.qid, tb.tid, tb.fid, tb.type, tb.points";
+	
+	$joined =  "(SELECT * FROM (SELECT $star1 FROM cs490q".$data->type." AS qXX
+					LEFT  $join 
+				UNION 
+				SELECT $star1 FROM cs490q".$data->type." AS qXX
+					RIGHT $join 
+				WHERE qXX.question IS NOT NULL) AS temp
+				WHERE temp.qid IS NOT NULL) AS joined";
+	
+	$star2 = "joined.question,";
+	
+	if($data->type != "OE") $star2 .= "joined.answer,";
+	if($data->type == "MC") $star2 .= "joined.a,";
+	if($data->type == "MC") $star2 .= "joined.b,";
+	if($data->type == "MC") $star2 .= "joined.c,";
+	if($data->type == "MC") $star2 .= "joined.d,";
+	if($data->type == "MC") $star2 .= "joined.e,";
+	
+	$star2 .= "joined.qid, joined.tid, joined.fid, joined.type, joined.points,";
+	
+	$star2 .= "qS.response";
+	
+	$sql = "SELECT $star2 FROM $joined 
+				LEFT  OUTER JOIN cs490qStored AS qS ON joined.qid = qS.qid 
+					AND qS.gid = ".$gid." 
+			UNION 
+			SELECT $star2 FROM $joined 
+				RIGHT OUTER JOIN cs490qStored AS qS ON joined.qid = qS.qid 
+					AND qS.gid = ".$gid." 
+			WHERE joined.question IS NOT NULL;";
+	
+	//echo $sql;
+	
+	$sql_result = mysql_query($sql, $conn);
+			
+	return sql2json($sql_result, true);
+}
+
 function SelectTests($data)
 {
 	$conn = getConn();
