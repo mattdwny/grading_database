@@ -20,8 +20,7 @@ if (isset($encoded) && !empty($encoded))
 	else if($decoded->flag == 'submit') //saving test
 	{
 		echo "back working...";
-		//submitting test for SQL entry
-		//echo SubmitGrade($decoded);
+		echo SubmitGrade($decoded);
 	}
 }
 ?>

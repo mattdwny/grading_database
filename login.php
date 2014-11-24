@@ -2,6 +2,7 @@
 session_start();
 require_once("curlRequest.php");
 require_once("globals.php");
+require_once("backrequire.php");
 
 if(isset ($_POST['username']) && isset ($_POST['password']))
 {
@@ -14,8 +15,8 @@ if(isset ($_POST['username']) && isset ($_POST['password']))
 		
 		if ($result)
 		{
-			$decoded = json_decode($result);
-
+			$decoded = json_decode($result)[0];
+			
 			$_SESSION['user'] = $_POST['username']; //set the username as it was typed.
 			$_SESSION['id'] = $decoded->uid;
 			$_SESSION['type'] = $decoded->type;

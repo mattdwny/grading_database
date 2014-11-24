@@ -59,28 +59,21 @@ function SelectTest()
 {
 	global $page, $front;
 
-	$info = array( 'url' => 'selecttest', 'id' => $_SESSION['id'], 'flag' => 'get_tests' );
-	$tests = json_decode(curlRequestF(json_encode($info)));
+	$info = array( 'url' => 'selecttest', 'uid' => $_SESSION['id'], 'flag' => 'get_tests' );
 	
+	$tests = json_decode(curlRequestF(json_encode($info)));
 	//$tests = curlRequestF(json_encode($info)); echo $tests;
 	
-	echo count($tests);
 	$formatted = "<p>";
-	if(count($tests) == 1) //hardcoding because of lines 158 & 186 in backrequire in sql2json
-	{
-		$formatted .= "<h1><a href=\"$page/$front/taketest.php?tid=".$tests->tid."\">";
-		$formatted .= $tests->testName.'</a></h1>';
+
+	//var_dump($tests);
+	for($i = 0; $i < count($tests); $i++)
+	{	
+		$test = get_object_vars($tests[$i]);
+		$formatted .= "<h1><a href=\"$page/$front/taketest.php?tid=".$test['tid']."\">";
+		$formatted .= $test['testName'].'</a></h1>';
 	}
-	else
-	{
-		//var_dump($tests);
-		for($i = 0; $i < count($tests); $i++)
-		{	
-			$test = get_object_vars($tests[$i]);
-			$formatted .= "<h1><a href=\"$page/$front/taketest.php?tid=".$test['tid']."\">";
-			$formatted .= $test['testName'].'</a></h1>';
-		}
-	}
+
 	$formatted .= "</p>";
 	
 	return $formatted;

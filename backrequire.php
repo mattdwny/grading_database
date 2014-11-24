@@ -1,5 +1,20 @@
 <?php
 
+//error_reporting(E_ALL); //Error settings
+//ini_set('display_errors', '1');
+
+
+
+$server="sql1.njit.edu"; //Set up a connection
+$user = "ss2563";
+$pass = "3XLprl2A2";
+
+$conn = mysql_connect($server,$user,$pass);
+if(!$conn) die('Could not connect: ' . mysql_error());
+mysql_select_db('ss2563') or die("didnt select database");
+
+
+
 function AddQuestion($data) //instructor adds question
 {
 	$conn = getConn();
@@ -9,13 +24,25 @@ function AddQuestion($data) //instructor adds question
 	else if($type == 'TF' || $type == 'FB') $query="INSERT INTO cs490q$type VALUES('', '$data->author', '$data->question', '$data->answer');";
 	else									$query="INSERT INTO cs490q$type VALUES('', '$data->author', '$data->question');";
 	mysql_query($query, $conn);
-	mysql_close($conn);
+}
+
+function CloseTest($data) //instructor closes exam
+{
+	$conn = getConn();
+	
+	$sql = "UPDATE cs490test 
+			SET closed = '1'  
+			WHERE tid = '".$data->tid."';";
+	
+	echo $sql;
+	
+	mysql_query($sql, $conn);
 }
 
 function CreateTest($data) //instructor makes exam
 {
 	$conn = getConn();
-	$sql = "INSERT INTO cs490test VALUES('','".$data->id."','".$data->testName."','0');";
+	$sql = "INSERT INTO cs490test VALUES('','".$data->id."','".$data->testName."','0','".$data->minutes."');";
 	$sql_result = mysql_query($sql, $conn);
 	$sql = "SELECT cs490test.tid FROM cs490test WHERE cs490test.uid = \"".$data->id."\" AND cs490test.testName = \"".$data->testName."\";";
 	$sql_result = mysql_query($sql, $conn);
@@ -46,8 +73,7 @@ function CreateTest($data) //instructor makes exam
 		$sql = "INSERT INTO cs490testbank VALUES('','".$tid."','".$oe."','OE','25.00');";
 		$sql_result = mysql_query($sql, $conn);
 	}
-	
-	mysql_close($conn);
+
 	echo 'running';
 }
 
@@ -59,7 +85,20 @@ function FetchQuestions($data, $instructor) //instructor get questions
 			'WHERE cs490q'.$data->type.'.uid = "'.$data->author.'";';
 	
 	$sql_result = mysql_query($sql, $conn);
-	mysql_close($conn);
+	
+	return sql2json($sql_result, $instructor);
+}
+
+function FetchTests($data) //instructor fetch exams
+{
+	$conn = getConn();
+
+	$sql = "SELECT *
+			FROM cs490test
+			WHERE uid = '".$data->uid."'
+			AND closed = '0';";
+	
+	$sql_result = mysql_query($sql, $conn);
 	
 	return sql2json($sql_result, $instructor);
 }
@@ -67,37 +106,88 @@ function FetchQuestions($data, $instructor) //instructor get questions
 function FetchTestQuestions($data, $instructor) //student get questions
 {
 	$conn = getConn();
+
+	//find if the test is open, if not return immediately
+	$sql = "SELECT *
+			FROM  cs490test
+			WHERE cs490test.tid = '".$data->tid."' AND cs490test.closed = '0';";
+	
+	$sql_result = mysql_query($sql, $conn);
+	
+	if(mysql_fetch_assoc($sql_result) === false) return "[]"; //test is closed
+	
+	
+	
+	//find if the student can take the test, if not return immediately
+	$now = date_create();
+	$timeStamp = $now->getTimestamp();
+	$sql = "SELECT *
+			FROM  cs490testgrade
+			WHERE (cs490testgrade.submitTime > '0' OR cs490testgrade.closeTime < '".$timeStamp."')
+					AND cs490testgrade.tid = '".$data->tid."'
+					AND cs490testgrade.uid = '".$data->uid."';";
+	
+	$sql_result = mysql_query($sql, $conn);
+
+	if(mysql_fetch_assoc($sql_result) !== false) return "[]"; //test is closed
+
+	
+	
+	//find if the student already has a test grade in the database for the test
+	$sql = "SELECT *
+			FROM  cs490testgrade
+			WHERE cs490testgrade.uid = '".$data->uid."' AND cs490testgrade.tid = '".$data->tid."';";
+
+	$sql_result = mysql_query($sql, $conn);
+
+	if($instructor === false && mysql_fetch_assoc($sql_result) === false)
+	{
+		//find the minutes allowed to take the test
+		$sql = "SELECT * 
+			FROM  cs490test
+			WHERE cs490test.tid = '".$data->tid."';";
+
+		$sql_result = mysql_query($sql, $conn);
+	
+		$now = date_create();
+		$closeTime = $now->getTimestamp() + 60*mysql_fetch_assoc($sql_result)['minutes'];
+		//Create a student grade in the database with an appropriate closeTime
+		$sql = "INSERT INTO cs490testgrade VALUES ('','".$data->uid."','".$data->tid."','0','','".$closeTime."');";
+		$sql_result = mysql_query($sql, $conn);
+	}
+	
+	//Load all questions and return them to the student.
 	$sql =  'SELECT * '.
 			'FROM cs490q'.$data->type.', cs490testbank '.
 			'WHERE cs490q'.$data->type.'.fid = cs490testbank.fid '. 
 			'AND cs490testbank.tid = "'.$data->tid.'" AND cs490testbank.type = "'.$data->type.'";';
 	
-	//test# == 17
-	// Select *
-	//FROM cs490qMC, cs490testbank
-	//WHERE cs490qMC.fid = cs490testbank.fid AND cs490testbank.tid = data->tid AND cs490testbank.type = MC;
-	
 	$sql_result = mysql_query($sql, $conn);
-	mysql_close($conn);
-	
+
 	return sql2json($sql_result, $instructor);
 }
 
-function getConn() //getting a SQL connection to access database
+function getConn() //getting a SQL connection to access database //Make this a singleton like object that uses isset()
 {
-	$server="sql.njit.edu";
-	$user = "ss2563";
-	$pass = "3XLprl2A2";
-
-	$conn = mysql_connect($server,$user,$pass);
-
-	if(! $conn )
-	{
-		die('Could not connect: ' . mysql_error());
-	}
-	mysql_select_db('ss2563') or die("didnt select database");
-
+	global $conn;
 	return $conn;
+}
+
+function GetGradeID($uid, $tid)
+{
+	$conn = getConn();
+
+	$sql = "SELECT cs490testgrade.gid
+			FROM cs490testgrade
+			WHERE 
+				  cs490testgrade.uid = \"$uid\" AND
+				  cs490testgrade.tid = \"$tid\";";
+	
+	$sql_result = mysql_query( $sql, $conn);		  
+	
+	if(!$sql_result) die('Could not get data: ' . mysql_error());
+	
+	return mysql_fetch_assoc($sql_result)['gid'];
 }
 
 function Login($data) //student/instructor login
@@ -109,17 +199,12 @@ function Login($data) //student/instructor login
 			WHERE cs490users.uid = cs490pass.uid AND
 				  cs490pass.password = "'.$data->pass.'" AND
 				  cs490users.username = "'.$data->user.'";';
-
-				  
-	//echo $sql;
 	
 	$sql_result = mysql_query( $sql, $conn);		  
 	
-	if(! $sql_result ) die('Could not get data: ' . mysql_error());
+	if(! $sql_result) die('Could not get data: ' . mysql_error());
 
 	$encoded = sql2json($sql_result, true);
-	
-	mysql_close($conn);
 
 	return $encoded;
 }
@@ -127,24 +212,27 @@ function Login($data) //student/instructor login
 function SelectTests($data)
 {
 	$conn = getConn();
-
-	$sql = 'SELECT *
+	
+	$now = date_create();
+	$timeStamp = $now->getTimestamp();
+	
+	//god-tier join function in SQL
+	$sql = "SELECT cs490test.tid, cs490test.testName, cs490test.closed, cs490test.minutes
 			FROM cs490test
-			WHERE cs490test.closed = 0;'; /*AND
-			(SELECT 1
-			FROM cs490testgrade
-			WHERE cs490testgrade.uid <> "'.$data->id.'");';*/
-
-				  
-	//echo $sql;
+				LEFT JOIN cs490testgrade ON cs490test.tid = cs490testgrade.tid
+					AND cs490testgrade.uid = '".$data->uid."'
+			WHERE   cs490testgrade.submitTime IS NULL OR
+					(cs490testgrade.submitTime = '0' AND
+					cs490testgrade.closeTime > '".$timeStamp."' AND 
+					cs490test.closed = '0');";
 	
 	$sql_result = mysql_query( $sql, $conn);		  
+	
+	
 	
 	if(! $sql_result ) die('Could not get data: ' . mysql_error());
 
 	$encoded = sql2json($sql_result, true);
-	
-	mysql_close($conn);
 
 	return $encoded;
 }
@@ -155,7 +243,7 @@ function sql2json($data_sql, $instructor) //turns sql data to json
 
     if($total = mysql_num_rows($data_sql)) //See if there is anything in the query
 	{
-        if(mysql_num_rows ($data_sql) != 1) $json_str .= "[\n";
+        $json_str .= "[\n";
 
         $row_count = 0;
         while($row = mysql_fetch_assoc($data_sql))
@@ -183,52 +271,62 @@ function sql2json($data_sql, $instructor) //turns sql data to json
             if($row_count < $total) $json_str .= ",\n";
         }
 
-        if(mysql_num_rows ($data_sql) != 1) $json_str .= "]\n";
+        $json_str .= "]\n";
     }
 
     //Replace the '\n's - make it faster - but at the price of bad readability.
     $json_str = str_replace("\n","",$json_str); //Comment this out when you are debugging the script
-
-	//echo $json_str;
 	
     //Finally, output the data
     return $json_str;
 }
 
-
-function StoreQuestions($data)
+function StoreQuestions($data) //TODO: fix
 {
 	$conn = getConn();
-	
-	$uid = $data->uid;
-	$tid = $data->tid;
+
+	$gid = GetGradeID($data->uid, $data->tid);
 	
 	foreach ($data->MC as &$mc)
 	{
-		$sql = "INSERT INTO cs490qStored VALUES('','".$uid."','".$tid."','".$mc->fid."','MC','".$mc->answer."');";
+		$sql = "INSERT INTO cs490qStored VALUES ('','".$gid."','".$mc->qid."','".$mc->answer."');";
 		$sql_result = mysql_query($sql, $conn);
+		if (!$sql_result) echo mysql_error()."!";
 	}
 	foreach ($data->TF as &$tf)
 	{
-		$sql = "INSERT INTO cs490qStored VALUES('','".$uid."','".$tid."','".$tf->fid."','TF','".$tf->answer."');";
+		$sql = "INSERT INTO cs490qStored VALUES ('','".$gid."','".$tf->qid."','".$tf->answer."');";
 		$sql_result = mysql_query($sql, $conn);
+		if (!$sql_result) echo mysql_error()."!";
 	}
 	foreach ($data->FB as &$fb)
 	{
-		$sql = "INSERT INTO cs490qStored VALUES('','".$uid."','".$tid."','".$fb->fid."','FB','".$fb->answer."');";
+		$sql = "INSERT INTO cs490qStored VALUES ('','".$gid."','".$fb->qid."','".$fb->answer."');";
 		$sql_result = mysql_query($sql, $conn);
+		if (!$sql_result) echo mysql_error()."!";
 	}
 	foreach ($data->OE as &$oe)
 	{
-		$sql = "INSERT INTO cs490qStored VALUES('','".$uid."','".$tid."','".$oe->fid."','OE','".$oe->answer."');";
+		$sql = "INSERT INTO cs490qStored VALUES ('','".$gid."','".$oe->qid."','".$oe->answer."');";
 		$sql_result = mysql_query($sql, $conn);
+		if (!$sql_result) echo mysql_error()."!";
 	}
-	
-	mysql_close($conn);
 }
 
-/*function SubmitGrade($data) //student submit test for grading //TODO
+function SubmitGrade($data) //student submit test for grading //TODO
 {
+	$conn = getConn();
+
+	$now = date_create();
+	$timeStamp = $now->getTimestamp();
+	$sql = "UPDATE cs490testgrade 
+			SET submitTime = '".$timeStamp."', grade = '".$data->grade."' 
+			WHERE uid = '".$data->uid."' AND tid = '".$data->tid."' 
+			AND cs490testgrade.closeTime > '".$timeStamp."' 
+			AND cs490testgrade.submitTime = '0';";
+	 
+	$sql_result = mysql_query($sql, $conn);
 	
-}*/
+	echo $sql;
+}
 ?>

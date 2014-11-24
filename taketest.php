@@ -14,6 +14,7 @@ if(isset($test) && !empty($test))
 		$decoded->flag = 'submit'; 
 		$stuff = curlRequestF(json_encode($decoded));
 		echo $stuff;
+		header("Location: $page/$front/selecttest.$suffix");
 	}
 }
 ?>
@@ -60,15 +61,15 @@ if(isset($test) && !empty($test))
 			document.getElementById('test').value = JSON.stringify(obj);
 		}
 		
-		function QAPair (fid)
+		function QAPair (qid)
 		{
-			this.fid = fid;
+			this.qid = qid;
 			this.answer = "";
 		}
 		
-		function AddQuestion(object, fid)
+		function AddQuestion(object, qid)
 		{
-			object.push(new QAPair(fid));
+			object.push(new QAPair(qid));
 		}
 		
 		function SetQuestion(object, i, answer)
@@ -215,7 +216,7 @@ function GetQuestions($type)
 		$formatted.="<tr name=\"rows\">";
 		
 		$formatted .= "<td name=\"cols\">".$temp['question']."</td>";
-		$formatted .= "<td hidden name=\"cols\">".$temp['fid']."</td>";
+		$formatted .= "<td hidden name=\"cols\">".$temp['qid']."</td>";
 		if($type == 'MC') $formatted .= "<td name=\"cols\">".$temp['a']."</td>";
 		if($type == 'MC') $formatted .= "<td name=\"cols\">".$temp['b']."</td>";
 		if($type == 'MC') $formatted .= "<td name=\"cols\">".$temp['c']."</td>";

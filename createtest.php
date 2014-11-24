@@ -6,34 +6,31 @@ require("curlRequest.php");
 if(isset($_POST['test']) && !empty($_POST['test']))
 {
 	$test = json_decode($_POST['test']);
-	if(!empty($test->testName))
+	if(!empty($test->testName) && !empty($test->minutes))
 	{
-		echo $_POST['test'];
-
 		$test->url = 'createtest';
 		$test->id = $_SESSION['id'];
 		$test->flag = 'test'; 
 		$stuff = curlRequestF(json_encode($test));
-		echo $stuff;
 	}
 }
 ?>
 
 <html>
 <head>
-	<script type="text/javascript">
-
+	<script>
 		function InitQuestions()
 		{
-			document.getElementById('test').value = '{"testName":"","MC":[],"TF":[],"FB":[],"OE":[]}';
+			document.getElementById('test').value = '{"minutes":"","testName":"","MC":[],"TF":[],"FB":[],"OE":[]}';
 		}
 		
 		function NameTest()
 		{
 			var test = document.getElementById('test').value;
-			var testName = document.getElementById('testName').value;
 			var obj = JSON.parse(test);
-			obj.testName = testName;
+			
+			obj.minutes = document.getElementById('minutes').value;
+			obj.testName = document.getElementById('testName').value;
 			document.getElementById('test').value = JSON.stringify(obj);
 		}
 	
@@ -51,7 +48,7 @@ if(isset($_POST['test']) && !empty($_POST['test']))
 			var test = document.getElementById('test').value;
 			var obj = JSON.parse(test);
 		
-			if(qt == 'MC')
+			if(qt == 'MC') 
 			{
 				for(var i = 1; i < table.rows.length; i++)
 				{
@@ -99,7 +96,7 @@ if(isset($_POST['test']) && !empty($_POST['test']))
 			document.getElementById('test').innerHTML = JSON.stringify(obj);
 		}
 		window.onload = InitQuestions;
-</script>
+	</script>
 
 </head>
 
@@ -134,6 +131,11 @@ table, td, th {
 			
 			<label>Test name :</label>
 				<input type="text" id="testName" name="testName"/><br>
+			
+			<br>
+			
+			<label>Time Allowed (Minutes): </label>
+				<input type="text" id="minutes" name="minutes"/><br>
 				
 			<br><p id="testInfo" name="testInfo">This is a paragraph</p>
 			
@@ -175,6 +177,7 @@ function formatQuestions($type)
 	//TODO: tagging system for questions, Query using like keyword search of question in SQL & tagging
 	$arr = array( 'url' => 'createtest', 'flag' => 'fetch', 'author' => $_SESSION['id'], 'type' => $type);
 	
+	//return curlRequestF(json_encode($arr));
 	$obj = json_decode(curlRequestF(json_encode($arr)));
 	
 	$formatted = "";
@@ -183,7 +186,7 @@ function formatQuestions($type)
 	$formatted .= '<table><tbody id="search">';
 	$formatted .= "<tr name=\"rows\">";
 	
-	$formatted .= '<td name="cols"><input hidden type="checkbox" name="cbox"></td>';
+	$formatted .= '<td name="cols"><input hidden type="checkbox" name="cbox"></td>'; //TODO points
 	$formatted .= "<td name=\"cols\">Question</td>";
 	$formatted .= "<td hidden name=\"cols\">ID</td>";
 	if($type != 'OE') $formatted .= "<td name=\"cols\">Answer</td>";
@@ -199,7 +202,7 @@ function formatQuestions($type)
 
 		$formatted.="<tr name=\"rows\">";
 		
-		$formatted .= '<td name="cols"><input type="checkbox" name="cbox"></td>';
+		$formatted .= '<td name="cols"><input type="checkbox" name="cbox"></td>'; //TODO points
 		$formatted .= "<td name=\"cols\">".$temp['question']."</td>";
 		$formatted .= "<td hidden name=\"cols\">".$temp['fid']."</td>";
 		if($type != 'OE') $formatted .= "<td name=\"cols\">".$temp['answer']."</td>";
